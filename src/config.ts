@@ -1,5 +1,6 @@
-require('dotenv').config()
-const assert = require('assert')
+import assert from 'assert'
+import dotenv from 'dotenv'
+dotenv.config()
 
 // Deconstruct environment variables for the server
 const {
@@ -17,7 +18,7 @@ const {
 } = process.env
 
 // Validate required environment variables
-const validate = (val, name) => assert(val, `${name} configuration is required.`)
+const validate = (val: string | undefined, name: string) => assert(val, `${name} configuration is required.`)
 validate(API_ENDPOINT, 'API_ENDPOINT')
 validate(PORT, 'PORT')
 validate(HOST, 'HOST')
@@ -30,7 +31,7 @@ validate(SQL_PASSWORD, 'SQL_PASSWORD')
 validate(SQL_ENCRYPT, 'SQL_ENCRYPT')
 
 // Export the configuration information
-module.exports = {
+export default {
   API_ENDPOINT,
   secret: APP_PASSPHRASE,
   port: PORT,

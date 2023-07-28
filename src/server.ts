@@ -1,10 +1,16 @@
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
+import { Server } from 'socket.io'
+import { SQLConfig } from './types'
 import routes from './routes'
 // import jwt from 'jsonwebtoken'
 // import { tokenSecret } from './config'
 
 const app = express()
+
+// helmet security
+app.use(helmet())
 
 // CORS configuration
 app.use(cors({
@@ -46,7 +52,6 @@ const start = (port: number) => app.listen(port, () => {
   console.log(`Server running on port ${port}...`)
 })
 
-import { Server } from 'socket.io'
 const io = new Server(5000, {
   cors: {
     origin: 'http://localhost:3000',
@@ -63,7 +68,7 @@ io.on('connection', (socket) => {
 })
 
 
-const connectDB = async SQLConfig => {
+const connectDB = async (SQLConfig: SQLConfig) => {
   // Establish SQL Server connection pool
   const db = require('./data/db')
   await db.openConnection(SQLConfig)
