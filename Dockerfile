@@ -19,8 +19,9 @@ COPY . .
 # Build the project with Vite
 RUN pnpm build
 
-# Expose the desired port
-EXPOSE 8080
+# Expose the desired ports
+EXPOSE 4000
+EXPOSE 5000
 
 # Start the application (replace "build" with the appropriate command to start your app)
 CMD ["pnpm", "serve"]
