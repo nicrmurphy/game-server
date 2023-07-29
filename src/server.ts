@@ -77,6 +77,7 @@ const io = new Server(Number(config.sockPort), {
 })
 
 io.on('connection', (socket) => {
+  console.log(socket)
   socket.emit('hello', 'world')
 
   socket.on('move', (data: { id: number, prevIndex: number, newIndex: number, newFenString: string }) => {
