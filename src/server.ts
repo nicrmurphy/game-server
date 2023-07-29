@@ -4,6 +4,7 @@ import helmet from 'helmet'
 import { Server } from 'socket.io'
 import { SQLConfig } from './types'
 import routes from './routes'
+import config from './config'
 // import jwt from 'jsonwebtoken'
 // import { tokenSecret } from './config'
 
@@ -12,9 +13,12 @@ const app = express()
 // helmet security
 app.use(helmet())
 
+// reduce fingerprinting
+app.disable('x-powered-by')
+
 // CORS configuration
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: o => o && config.corsWhitelist.includes(o),
   optionsSuccessStatus: 200
 }))
 
@@ -52,9 +56,22 @@ const start = (port: number) => app.listen(port, () => {
   console.log(`Server running on port ${port}...`)
 })
 
+// custom 404
+// TODO: implement
+app.use((req, res, next) => {
+  res.status(404).send("Sorry can't find that!")
+})
+
+// custom error handler
+// TODO: implement; fix types
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error(err.stack)
+  res.status(500).send('Something broke!')
+})
+
 const io = new Server(5000, {
   cors: {
-    origin: 'http://localhost:3000',
+    origin: config.corsWhitelist,
     methods: ['get', 'post']
   }
 })
@@ -67,7 +84,6 @@ io.on('connection', (socket) => {
   })
 })
 
-
 const connectDB = async (SQLConfig: SQLConfig) => {
   // Establish SQL Server connection pool
   const db = require('./data/db')
@@ -78,12 +94,6 @@ const connectDB = async (SQLConfig: SQLConfig) => {
       }\u001b[0m as user \u001b[36m${SQLConfig.user
       }\u001b[0m`)
   else console.log('Unable to connect to database')
-
-  // Debug: Retrieve and display most recent logins for current user
-  // const { loginService } = require('./data/vp')
-  // const recentLogins = await loginService.getRecentLogins(10)
-  // console.table(recentLogins)
-
 }
 
 const server = { app, start, connectDB }

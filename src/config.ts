@@ -10,6 +10,7 @@ const {
   HOST,
   HOST_URL,
   TOKEN_ENCRYPT_SECRET,
+  CORS_WHITELIST,
   SQL_SERVER,
   SQL_DATABASE,
   SQL_USER,
@@ -24,6 +25,7 @@ validate(PORT, 'PORT')
 validate(HOST, 'HOST')
 validate(HOST_URL, 'HOST_URL')
 validate(TOKEN_ENCRYPT_SECRET, 'TOKEN_ENCRYPT_SECRET')
+validate(CORS_WHITELIST, 'CORS_WHITELIST')
 validate(SQL_SERVER, 'SQL_SERVER')
 validate(SQL_DATABASE, 'SQL_DATABASE')
 validate(SQL_USER, 'SQL_USER')
@@ -38,6 +40,7 @@ export default {
   host: HOST,
   url: HOST_URL,
   tokenSecret: TOKEN_ENCRYPT_SECRET,
+  corsWhitelist: CORS_WHITELIST?.split(',') ?? [],
   sql: {
     server: SQL_SERVER,
     database: SQL_DATABASE,
