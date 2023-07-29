@@ -69,7 +69,7 @@ app.use((err: any, req: any, res: any, next: any) => {
   res.status(500).send('Something broke!')
 })
 
-const io = new Server(5000, {
+const io = new Server(Number(config.wsPort), {
   cors: {
     origin: config.corsWhitelist,
     methods: ['get', 'post']
