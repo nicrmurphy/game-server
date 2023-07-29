@@ -1,4 +1,5 @@
 import express from 'express'
+import http from 'http'
 import cors from 'cors'
 import helmet from 'helmet'
 import { Server } from 'socket.io'
@@ -10,6 +11,7 @@ import config from './config'
 
 const app = express()
 
+//#region web server config and setup
 // helmet security
 app.use(helmet())
 
@@ -64,11 +66,9 @@ app.use((err: any, req: any, res: any, next: any) => {
   console.error(err.stack)
   res.status(500).send('Something broke!')
 })
+//#endregion web server config and setup
 
-const startWebServer = (port: number) => app.listen(port, () => {
-  console.log(`Server running on port ${port}...`)
-})
-
+//#region socket server config and setup
 const io = new Server({
   cors: {
     origin: (o, res) => {
@@ -87,13 +87,31 @@ io.on('connection', (socket) => {
     socket.broadcast.emit('move', data)
   })
 })
+//#endregion socket server config and setup
 
-const startSocketServer = (port: number) => {
-  io.listen(Number(config.sockPort))
-  console.log(`Socket server running on port ${port}...`)
+// create the server instance
+const server = http.createServer(app)
+
+/**
+ * Start running the web server and socket server on desired port
+ * @param port Desired port to listen; defaults to port specified in app config
+ */
+const start = (port: number | undefined = Number(config.port)) => {
+  // start the web server
+  server.listen(port, () => {
+    console.log(`✅ Web server running on port ${port}...`)
+
+    // start the socket server
+    io.listen(server)
+    console.log(`✅ Socket server running on port ${port}...`)
+  })
 }
 
-const connectDB = async (SQLConfig: SQLConfig) => {
+/**
+ * Connect to the SQL Server database specified in app config
+ * @param SQLConfig Provided SQL config to use; defaults to options specified in app config
+ */
+const connectDB = async (SQLConfig: SQLConfig = config.sql) => {
   // Establish SQL Server connection pool
   const db = require('./data/db')
   await db.openConnection(SQLConfig)
@@ -105,7 +123,4 @@ const connectDB = async (SQLConfig: SQLConfig) => {
   else console.log('Unable to connect to database')
 }
 
-const server = { app, startWebServer, connectDB, startSocketServer }
-
-
-export default server
+export default { app, io, start, connectDB }

@@ -6,8 +6,7 @@ dotenv.config()
 const {
   API_ENDPOINT,
   APP_PASSPHRASE,
-  WEB_PORT,
-  SOCK_PORT,
+  PORT,
   HOST,
   HOST_URL,
   TOKEN_ENCRYPT_SECRET,
@@ -22,8 +21,7 @@ const {
 // Validate required environment variables
 const validate = (val: string | undefined, name: string) => assert(val, `${name} configuration is required.`)
 validate(API_ENDPOINT, 'API_ENDPOINT')
-validate(WEB_PORT, 'WEB_PORT')
-validate(SOCK_PORT, 'SOCK_PORT')
+validate(PORT, 'PORT')
 validate(HOST, 'HOST')
 validate(HOST_URL, 'HOST_URL')
 validate(TOKEN_ENCRYPT_SECRET, 'TOKEN_ENCRYPT_SECRET')
@@ -38,17 +36,16 @@ validate(SQL_ENCRYPT, 'SQL_ENCRYPT')
 export default {
   API_ENDPOINT,
   secret: APP_PASSPHRASE,
-  port: WEB_PORT,
-  sockPort: SOCK_PORT,
+  port: PORT,
   host: HOST,
   url: HOST_URL,
   tokenSecret: TOKEN_ENCRYPT_SECRET,
   corsWhitelist: CORS_WHITELIST?.split(',') ?? [],
   sql: {
-    server: SQL_SERVER,
-    database: SQL_DATABASE,
-    user: SQL_USER,
-    password: SQL_PASSWORD,
+    server: SQL_SERVER!,
+    database: SQL_DATABASE!,
+    user: SQL_USER!,
+    password: SQL_PASSWORD!,
     options: {
       encrypt: false,
       enableArithAbort: true,
