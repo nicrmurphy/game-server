@@ -52,10 +52,6 @@ app.use(express.json())
 // Apply routes to web server
 routes.forEach(({ method, path, handler }) => app[method](path, handler))
 
-const start = (port: number) => app.listen(port, () => {
-  console.log(`Server running on port ${port}...`)
-})
-
 // custom 404
 // TODO: implement
 app.use((req, res, next) => {
@@ -69,21 +65,33 @@ app.use((err: any, req: any, res: any, next: any) => {
   res.status(500).send('Something broke!')
 })
 
-const io = new Server(Number(config.sockPort), {
+const startWebServer = (port: number) => app.listen(port, () => {
+  console.log(`Server running on port ${port}...`)
+})
+
+const io = new Server({
   cors: {
-    origin: config.corsWhitelist,
+    origin: (o, res) => {
+      console.log(o)  // here for debug only
+      res(null, config.corsWhitelist)
+    },
     methods: ['get', 'post']
   }
 })
 
 io.on('connection', (socket) => {
-  console.log(socket)
+  console.log(socket.id, 'connected')
   socket.emit('hello', 'world')
 
   socket.on('move', (data: { id: number, prevIndex: number, newIndex: number, newFenString: string }) => {
     socket.broadcast.emit('move', data)
   })
 })
+
+const startSocketServer = (port: number) => {
+  io.listen(Number(config.sockPort))
+  console.log(`Socket server running on port ${port}...`)
+}
 
 const connectDB = async (SQLConfig: SQLConfig) => {
   // Establish SQL Server connection pool
@@ -97,7 +105,7 @@ const connectDB = async (SQLConfig: SQLConfig) => {
   else console.log('Unable to connect to database')
 }
 
-const server = { app, start, connectDB }
+const server = { app, startWebServer, connectDB, startSocketServer }
 
 
 export default server

@@ -20,7 +20,6 @@ COPY . .
 RUN pnpm build
 
 # Expose the desired ports
-EXPOSE 4000
 EXPOSE 5000
 
 # Start the application (replace "build" with the appropriate command to start your app)
