@@ -1,5 +1,7 @@
 import { RequestHandler } from 'express'
 
+export type GameState = { fenString: string, playerColor: number, opponentColor: number }
+
 export type Route = {
   method: 'get',
   path: string,

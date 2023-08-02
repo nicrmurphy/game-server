@@ -3,7 +3,7 @@ import http from 'http'
 import cors from 'cors'
 import helmet from 'helmet'
 import { Server } from 'socket.io'
-import { SQLConfig } from './types'
+import { GameState, SQLConfig } from './types'
 import routes from './routes'
 import config from './config'
 // import jwt from 'jsonwebtoken'
@@ -103,9 +103,18 @@ io.on('connection', (socket) => {
     console.log('joined room', code)
   })
 
+  socket.on('start', (data: GameState) => {
+    socket.broadcast.emit('start', data)
+  })
+
   socket.on('move', (data: { id: number, prevIndex: number, newIndex: number, newFenString: string }) => {
     console.log('rooms:', socket.rooms)
     socket.broadcast.emit('move', data)
+  })
+
+  socket.on('resign', () => {
+    console.log(`${socket.id} resigns in room ${socket.rooms}`)
+    socket.broadcast.emit('resign')
   })
 })
 //#endregion socket server config and setup
