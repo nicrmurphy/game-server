@@ -3,7 +3,7 @@ import http from 'http'
 import cors from 'cors'
 import helmet from 'helmet'
 import { Server } from 'socket.io'
-import { GameState, SQLConfig } from './types'
+import { GameState, MoveData, SQLConfig } from './types'
 import routes from './routes'
 import config from './config'
 // import jwt from 'jsonwebtoken'
@@ -79,13 +79,15 @@ const io = new Server({
   }
 })
 
-io.on('connection', (socket) => {
+io.on('connection', socket => {
   console.log(socket.id, 'connected')
+  
+  const roomExists = (roomCode: string): boolean => !!(io.of('/').adapter.rooms.get(roomCode))
+  const isPlayerInRoom = (roomCode: string): boolean => socket.rooms.has(roomCode)
 
-  socket.on('join', data => {
+  socket.on('join', (data: { code: string }) => {
     console.log(`${socket.id} attempting to join room ${data.code}`)
-    const room = io.of('/').adapter.rooms.get(data.code)
-    if (room) {
+    if (roomExists(data.code)) {
       socket.join(data.code)
       io.to(data.code).emit('join', 'joined room successfully')
       console.log('joined room', data.code)
@@ -104,17 +106,18 @@ io.on('connection', (socket) => {
   })
 
   socket.on('start', (data: GameState) => {
-    socket.broadcast.emit('start', data)
+    if (isPlayerInRoom(data.roomCode)) io.to(data.roomCode).emit('start', data)
   })
 
-  socket.on('move', (data: { id: number, prevIndex: number, newIndex: number, newFenString: string }) => {
-    console.log('rooms:', socket.rooms)
-    socket.broadcast.emit('move', data)
+  socket.on('move', (data: { gameState: GameState, moveData: MoveData }) => {
+    if (isPlayerInRoom(data.gameState.roomCode)) io.to(data.gameState.roomCode).emit('move', data)
   })
 
-  socket.on('resign', () => {
-    console.log(`${socket.id} resigns in room ${socket.rooms}`)
-    socket.broadcast.emit('resign')
+  socket.on('resign', (gameState: GameState) => {
+    if (isPlayerInRoom(gameState.roomCode)) {
+      console.log(`${socket.id} resigns in room ${socket.rooms}`)
+      io.to(gameState.roomCode).emit('resign')
+    }
   })
 })
 //#endregion socket server config and setup
