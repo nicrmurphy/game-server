@@ -81,9 +81,30 @@ const io = new Server({
 
 io.on('connection', (socket) => {
   console.log(socket.id, 'connected')
-  socket.emit('hello', 'world')
+
+  socket.on('join', data => {
+    console.log(`${socket.id} attempting to join room ${data.code}`)
+    const room = io.of('/').adapter.rooms.get(data.code)
+    if (room) {
+      socket.join(data.code)
+      io.to(data.code).emit('join', 'joined room successfully')
+      console.log('joined room', data.code)
+    } else {
+      socket.emit('join-error', 'No room found')
+    }
+  })
+
+  socket.on('new-room', () => {
+    console.log(`${socket.id} attempting to create new room`)
+    // TODO:- random room code generation
+    const code = socket.id.replace(/-/g, '').substring(0, 12)
+    socket.join(code)
+    socket.emit('join', { code })
+    console.log('joined room', code)
+  })
 
   socket.on('move', (data: { id: number, prevIndex: number, newIndex: number, newFenString: string }) => {
+    console.log('rooms:', socket.rooms)
     socket.broadcast.emit('move', data)
   })
 })
